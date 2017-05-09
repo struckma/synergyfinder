@@ -1,15 +1,19 @@
 Package: synergyfinder
 Type: Package
 Title: Calculate and Visualize Synergy Scores for Drug Combinations
-Version: 1.3.0
-Date: 2016-04-15
-Author: Liye He <liye.he@helsinki.fi>, Jing Tang <jing.tang@helsinki.fi>
+Version: 1.3.0.1
+Date: 2017-05-09
+Author: Liye He <liye.he@helsinki.fi>, Jing Tang <jing.tang@helsinki.fi>, Stephan Struckmann <stephan.struckmann@gmail.com>
 Maintainer: Liye He <liye.he@helsinki.fi>
 Imports: drc (>= 2.5-12), reshape2 (>= 1.4.1), kriging (>= 1.1),
         ggplot2 (>= 2.1.0), gridBase (>= 0.4-7), grid (>= 3.2.4),
         lattice (>= 0.20-33), gplots (>= 3.0.0), nleqslv(>= 3.0), stats
         (>= 3.3.0), graphics (>= 3.3.0), grDevices (>= 3.3.0)
-Description: Efficient implementations for all the popular synergy scoring models for drug combinations, including HSA, Loewe, Bliss and ZIP and visualization of the synergy scores as either a two-dimensional or a three-dimensional interaction surface over the dose matrix.
+Description: Efficient implementations for all the popular synergy scoring models for drug combinations, including HSA, Loewe, 
+             Bliss and ZIP and visualization of the synergy scores as either a two-dimensional or a three-dimensional interaction 
+             surface over the dose matrix. This fork has an updated PlotDoseResponse function, with adaptions from hly89, a 
+             work-around for knitr compatibility (quite ugly but working) by Stephan Struckmann and a bug fix regarding swapped
+             dimensions for the heatmap plot also by Stephan Struckmann.
 License: Artistic License 2.0
 LazyData: TRUE
 RoxygenNote: 5.0.1
