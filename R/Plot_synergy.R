@@ -161,7 +161,20 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
       if(!is.null(y.range)) {
         y.conc1 <- y.conc1[y.range[1]:y.range[2]]
       }
-      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7),x=list(at=seq(0, pixels.num, 5),labels=signif(x.conc1, 1)),y=list(at=seq(0,pixels.num,5),labels=signif(y.conc1,1))),
+      #      conc1 -> column.values -- ncol(plots.3d)
+      #      conc2 -> row.values -- nrow(plots.3d)
+      
+      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(conc1)), conc=conc1)
+      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(conc2)), conc=conc2)
+      
+      column.values = spline(c1$point, c1$conc, xout = (1:ncol(plots.3d)))
+      row.values = spline(c2$point, c2$conc, xout = (1:nrow(plots.3d)))
+      
+      x.at = spline(c1$conc, c1$point, xout = conc1)$y
+      y.at = spline(c2$conc, c2$point, xout = conc2)$y
+      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7),
+                                              x=list(at=x.at,labels=signif(x.conc1, 1)),
+                                              y=list(at=y.at,labels=signif(y.conc1,1))),
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
                        zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
@@ -170,7 +183,9 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
                        main = plot.title,
                        at=do.breaks(c(start.point, end.point),100),
                        par.settings = list(axis.line=list(col="transparent")),
-                       zoom = 1, aspect = 1
+                       zoom = 1, aspect = 1,
+                       row.values = row.values$y, 
+                       column.values = column.values$y
                        #par.settings=list(layout.widths=list(left.padding=0,right.padding=0), layout.heights=list(top.padding=0, bottom.padding=0)) # margin
       )
       print(fig)
@@ -252,8 +267,9 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
       
       
       syn.3d.plot <- wireframe(plots.3d,
-                          scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)
-                                       ),
+                          scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7),
+                                        x=list(at=x.at,labels=signif(x.conc1, 1)),
+                                        y=list(at=y.at,labels=signif(y.conc1,1))),
                 drape = TRUE, colorkey = list(space="top",width=0.5),
                 screen = list(z = 30, x = -55),
                 zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
@@ -466,7 +482,21 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pair
       if(!is.null(y.range)) {
         y.conc1 <- y.conc1[y.range[1]:y.range[2]]
       }
-      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7),x=list(at=seq(0, pixels.num, 5),labels=signif(x.conc1, 1)),y=list(at=seq(0,pixels.num,5),labels=signif(y.conc1,1))),
+      #      conc1 -> column.values -- ncol(plots.3d)
+      #      conc2 -> row.values -- nrow(plots.3d)
+      
+      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(conc1)), conc=conc1)
+      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(conc2)), conc=conc2)
+      
+      column.values = spline(c1$point, c1$conc, xout = (1:ncol(plots.3d)))
+      row.values = spline(c2$point, c2$conc, xout = (1:nrow(plots.3d)))
+      
+      x.at = spline(c1$conc, c1$point, xout = conc1)$y
+      y.at = spline(c2$conc, c2$point, xout = conc2)$y
+      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7),
+                                              x=list(at=x.at,labels=signif(x.conc1, 1)),
+                                              y=list(at=y.at,labels=signif(y.conc1,1))),
+                       
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
                        zlab=list(expression("Effect"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
@@ -475,7 +505,9 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pair
                        main = plot.title,
                        at=do.breaks(c(start.point, end.point),100),
                        par.settings = list(axis.line=list(col="transparent")),
-                       zoom = 1, aspect = 1
+                       zoom = 1, aspect = 1,
+                       row.values = row.values$y, 
+                       column.values = column.values$y
                        #par.settings=list(layout.widths=list(left.padding=0,right.padding=0), layout.heights=list(top.padding=0, bottom.padding=0)) # margin
       )
       print(fig)
@@ -557,8 +589,9 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pair
       y.at = spline(c2$conc, c2$point, xout = conc2)$y
       
       syn.3d.plot <- wireframe(plots.3d,
-                               scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)
-                               ),
+                               scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7),
+                                             x=list(at=x.at,labels=signif(x.conc1, 1)),
+                                             y=list(at=y.at,labels=signif(y.conc1,1))),
                                drape = TRUE, colorkey = list(space="top",width=0.5),
                                screen = list(z = 30, x = -55),
                                zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
