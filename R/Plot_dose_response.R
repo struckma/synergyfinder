@@ -24,7 +24,7 @@
 #' data("mathews_screening_data")
 #' data <- ReshapeData(mathews_screening_data)
 #' PlotDoseResponse(data, type = "both", save.file = TRUE)
-PlotDoseResponse <- function (data, knitr = F,
+PlotDoseResponse <- function (data, knitr = FALSE,
                               save.file = FALSE, pair.index = NULL, single.fixed = c(NA, 
                                                                                      NA, NA, NA), type = c("both", "heatmap", "curve"), merge = FALSE, 
                               pdf.height = 8, pdf.width = 8, ...) 
