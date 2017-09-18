@@ -352,7 +352,9 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
 
 }
 
-PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pair.index = NULL, legend.start = NULL, legend.end = NULL, x.range = NULL, y.range = NULL) {
+PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, 
+                       effect.label = "Effect",
+                       pair.index = NULL, legend.start = NULL, legend.end = NULL, x.range = NULL, y.range = NULL) {
   if(!is.list(data)) {
     stop("Input data is not a list format!")
   }
@@ -502,7 +504,7 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pair
                        
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
-                       zlab=list(expression("Effect"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
+                       zlab=list(expression(effect.label),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
                        zlim=c(start.point, end.point),
                        col.regions=colorRampPalette(c("green","white","red"))(100),
                        main = plot.title,
