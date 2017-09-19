@@ -1,3 +1,61 @@
+#' f2si2
+#'
+#' Format numbers with SI units
+#'
+#' @param numbers vector of numbers
+#' @param rounding round numbers
+#' @param force_unit NA = auto detect suitable units per number, a unit: convert numbers to that unit
+#' @param no_suffix omit the unit prefix in the output
+#'
+#' @return a vector of converted numbers as characters
+#' 
+#' @export
+#' 
+#' @author Stephan Struckmann \email{stephan.struckmann@expressence.de}
+#' @author Roland \url{https://stackoverflow.com/users/1412059/roland)}
+#' @author Jonas Stein \email{news@jonasstein.de} \url{https://github.com/jonasstein/sitools}
+#'
+#' @examples
+#' f2si2(c(1000000.1, 10, 100, 1000, 0.001, .000001, .00000001), force_unit = "k", no_suffix = FALSE )
+#' f2si2(c(1000000.1, 10, 100, 1000, 0.001, .000001, .00000001), force_unit = "k" )
+#' f2si2(c(1000000.1, 10, 100, 1000, 0.001, .000001, .00000001) )
+#' 
+#' @seealso https://stackoverflow.com/a/11341038
+f2si2<-function (numbers, rounding=FALSE, force_unit = NA, no_suffix = !is.na(force_unit)) 
+{
+  sistrings = c()
+  for (i in 1:length(numbers)) {
+    number = numbers[[i]]
+    lut <- c(1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-09, 1e-06, 
+             0.001, 1, 1000, 1e+06, 1e+09, 1e+12, 1e+15, 1e+18, 1e+21, 
+             1e+24)
+    pre <- c("y", "z", "a", "f", "p", "n", "µ", "m", "", "k", 
+             "M", "G", "T", "P", "E", "Z", "Y")
+    if (!is.na(force_unit)) {
+      ix <- which(pre == force_unit)
+    } else {
+      ix <- findInterval(number, lut)
+    }
+    if (lut[ix]!=1) {
+      if (no_suffix)
+        unit = ""
+      else
+        unit = pre[ix]
+      if (rounding==T) {
+        sistring <- paste(round(number/lut[ix]), unit, sep = ifelse(unit == "", "", " "))
+      }
+      else {
+        sistring <- paste(number/lut[ix], unit, sep = ifelse(unit == "", "", " "))
+      } 
+    }
+    else {
+      sistring <- as.character(number)
+    }
+    sistrings = c(sistrings, sistring)
+  }
+  return(sistrings)
+}
+
 #'Drug interaction landscape
 #'
 #'A function to visualize the synergy scores for drug combinations as 2D or 3D
@@ -164,14 +222,14 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
       #      conc1 -> column.values -- ncol(plots.3d)
       #      conc2 -> row.values -- nrow(plots.3d)
       
-      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(conc1)), conc=conc1)
-      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(conc2)), conc=conc2)
+      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(x.conc1)), conc=x.conc1)
+      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(y.conc1)), conc=y.conc1)
       
       column.values = spline(c1$point, c1$conc, xout = (1:ncol(plots.3d)))
       row.values = spline(c2$point, c2$conc, xout = (1:nrow(plots.3d)))
       
-      x.at = spline(c1$conc, c1$point, xout = conc1)$y
-      y.at = spline(c2$conc, c2$point, xout = conc2)$y
+      x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
+      y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
       fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)#,
                                               #x=list(at=x.at,labels=signif(conc1, 1)),
                                               #y=list(at=y.at,labels=signif(conc2,1))
@@ -257,14 +315,14 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
 #      conc1 -> column.values -- ncol(plots.3d)
 #      conc2 -> row.values -- nrow(plots.3d)
       
-      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(conc1)), conc=conc1)
-      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(conc2)), conc=conc2)
+      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(x.conc1)), conc=x.conc1)
+      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(y.conc1)), conc=y.conc1)
 
       column.values = spline(c1$point, c1$conc, xout = (1:ncol(plots.3d)))
       row.values = spline(c2$point, c2$conc, xout = (1:nrow(plots.3d)))
 
-      x.at = spline(c1$conc, c1$point, xout = conc1)$y
-      y.at = spline(c2$conc, c2$point, xout = conc2)$y
+      x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
+      y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
       
       
       syn.3d.plot <- wireframe(plots.3d,
@@ -489,14 +547,14 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
       #      conc1 -> column.values -- ncol(plots.3d)
       #      conc2 -> row.values -- nrow(plots.3d)
       
-      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(conc1)), conc=conc1)
-      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(conc2)), conc=conc2)
+      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(x.conc1)), conc=x.conc1)
+      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(y.conc1)), conc=y.conc1)
       
       column.values = spline(c1$point, c1$conc, xout = (1:ncol(plots.3d)))
       row.values = spline(c2$point, c2$conc, xout = (1:nrow(plots.3d)))
       
-      x.at = spline(c1$conc, c1$point, xout = conc1)$y
-      y.at = spline(c2$conc, c2$point, xout = conc2)$y
+      x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
+      y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
       fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)#,
                                               #x=list(at=x.at,labels=signif(conc1, 1)),
                                               #y=list(at=y.at,labels=signif(conc2,1))
@@ -504,7 +562,7 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
                        
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
-                       zlab=list(expression(effect.label),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
+                       zlab=list(effect.label,rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
                        zlim=c(start.point, end.point),
                        col.regions=colorRampPalette(c("green","white","red"))(100),
                        main = plot.title,
@@ -584,14 +642,14 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
       #      conc1 -> column.values -- ncol(plots.3d)
       #      conc2 -> row.values -- nrow(plots.3d)
       
-      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(conc1)), conc=conc1)
-      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(conc2)), conc=conc2)
+      c1 = data.frame(point=seq(from = 1, to = ncol(plots.3d), length.out = length(x.conc1)), conc=x.conc1)
+      c2 = data.frame(point=seq(from = 1, to = nrow(plots.3d), length.out = length(y.conc1)), conc=y.conc1)
       
       column.values = spline(c1$point, c1$conc, xout = (1:ncol(plots.3d)))
       row.values = spline(c2$point, c2$conc, xout = (1:nrow(plots.3d)))
       
-      x.at = spline(c1$conc, c1$point, xout = conc1)$y
-      y.at = spline(c2$conc, c2$point, xout = conc2)$y
+      x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
+      y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
       
       syn.3d.plot <- wireframe(plots.3d,
                                scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)# ,
