@@ -88,6 +88,8 @@ f2si2<-function (numbers, rounding=FALSE, force_unit = NA, no_suffix = !is.na(fo
 #' @param y.range a parameter to specify the starting and ending concentration of the drug on y-axis. Use e.g., c(1, 3) to 
 #' specify that only from 1st to 3rd concentrations of the drug on y-axis are used. By default, it is NULl so all the 
 #' concentrations are used.
+#' @param x.unit unit for display
+#' @param y.unit unit for display
 #' @return a pdf file or the interaction landscapes are only displayed depending on
 #' the save.file parameter.
 #' @author Liye He \email{liye.he@helsinki.fi}
@@ -97,7 +99,8 @@ f2si2<-function (numbers, rounding=FALSE, force_unit = NA, no_suffix = !is.na(fo
 #' scores <- CalculateSynergy(data)
 #' PlotSynergy(scores, "2D")
 
-PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pair.index = NULL, legend.start = NULL, legend.end = NULL, x.range = NULL, y.range = NULL) {
+PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pair.index = NULL, legend.start = NULL, legend.end = NULL, x.range = NULL, y.range = NULL,
+                        x.unit = "µ", y.unit = "µ") {
   if(!is.list(data)) {
     stop("Input data is not a list format!")
   }
@@ -186,11 +189,20 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
     c <- matrix(res1, na, nb, byrow = TRUE)
     plot.title <- paste(data$method,"synergy score:", summary.score, sep = " ")
 
+    lut <- c(1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-09, 1e-06, 
+             0.001, 1, 1000, 1e+06, 1e+09, 1e+12, 1e+15, 1e+18, 1e+21, 
+             1e+24)
+    pre <- c("y", "z", "a", "f", "p", "n", "µ", "m", "", "k", 
+             "M", "G", "T", "P", "E", "Z", "Y")
+
     conc.unit <- drug.pairs$concUnit[i] ## concentration unit
-    unit.text <- paste("(", conc.unit, ")", sep = "")
+    conc.unit.prefix <- substr(conc.unit, 1, 1)
+
+    unit.text.x <- paste("(", x.unit, "M)", sep = "")
+    unit.text.y <- paste("(", y.unit, "M)", sep = "")
     file.name <- paste(drug.row, drug.col, "synergy", drug.pairs$blockIDs[i], data$method, "pdf", sep = ".")
-    drug.row <- paste(drug.row, unit.text, sep = " ")
-    drug.col <- paste(drug.col, unit.text, sep = " ")
+    drug.row <- paste(drug.row, unit.text.x, sep = " ")
+    drug.col <- paste(drug.col, unit.text.y, sep = " ")
     max.dose <- max(abs(max(scores.dose)), abs(min(scores.dose)))
     color.range <- round(max.dose + 5, -1)
     if(is.null(legend.start)){
@@ -240,17 +252,14 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
       x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
       y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
       
-      x_axtcks = x.conc1
-      #axisTicks(c(min(a), max(a)), FALSE, nint=dev.size(units = "px")[[1]]/30)
-      y_axtcks = y.conc1
+      x_axtcks = axisTicks(c(min(y.conc1), max(y.conc1)), FALSE)
+      y_axtcks = axisTicks(c(min(x.conc1), max(x.conc1)), FALSE)
       #axisTicks(c(min(b), max(b)), FALSE, nint=dev.size(units = "px")[[2]]/30)
       
       fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)
-#                                              ,
-#                                              x=list(at = (1:length(x_axtcks))*50, labels = f2si2(x_axtcks)),
-#                                              y=list(at = y_axtcks, labels = f2si2(y_axtcks))
-                                              #x=list(at=x.at,labels=signif(conc1, 1)),
-                                              #y=list(at=y.at,labels=signif(conc2,1))
+                                              ,
+                                              x=list(at = x_axtcks, labels = f2si2(x_axtcks*lut[pre == conc.unit.prefix], force_unit = x.unit)),
+                                              y=list(at = y_axtcks, labels = f2si2(y_axtcks*lut[pre == conc.unit.prefix], force_unit = y.unit))
                                               ),
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
@@ -342,12 +351,15 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
       x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
       y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
       
+      x_axtcks = axisTicks(c(min(y.conc1), max(y.conc1)), FALSE)
+      y_axtcks = axisTicks(c(min(x.conc1), max(x.conc1)), FALSE)
       
       syn.3d.plot <- wireframe(plots.3d,
-                          scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)#,
-#                                        x=list(at=x.at,labels=signif(conc1, 1)),
-#                                        y=list(at=y.at,labels=signif(conc2,1))
-                ),
+                          scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)
+                                        ,
+                                        x=list(at = x_axtcks, labels = f2si2(x_axtcks*lut[pre == conc.unit.prefix], force_unit = x.unit)),
+                                        y=list(at = y_axtcks, labels = f2si2(y_axtcks*lut[pre == conc.unit.prefix], force_unit = y.unit))
+                          ),
                 drape = TRUE, colorkey = list(space="top",width=0.5),
                 screen = list(z = 30, x = -55),
                 zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.row),cex=1, rot=20),ylab=list(as.character(drug.col),cex=1,rot=-50),
@@ -430,7 +442,8 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
 
 PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, 
                        effect.label = "Effect",
-                       pair.index = NULL, legend.start = NULL, legend.end = NULL, x.range = NULL, y.range = NULL) {
+                       pair.index = NULL, legend.start = NULL, legend.end = NULL, x.range = NULL, y.range = NULL,
+                       x.unit = "µ", y.unit = "µ") {
   if(!is.list(data)) {
     stop("Input data is not a list format!")
   }
@@ -520,11 +533,21 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
 #    plot.title <- paste(data$method,"synergy score:", summary.score, "(Effect)", sep = " ")
     plot.title <- paste("Dose-response plane", sep = " ")
     
+    lut <- c(1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-09, 1e-06, 
+             0.001, 1, 1000, 1e+06, 1e+09, 1e+12, 1e+15, 1e+18, 1e+21, 
+             1e+24)
+    pre <- c("y", "z", "a", "f", "p", "n", "µ", "m", "", "k", 
+             "M", "G", "T", "P", "E", "Z", "Y")
+
     conc.unit <- drug.pairs$concUnit[i] ## concentration unit
-    unit.text <- paste("(", conc.unit, ")", sep = "")
+    conc.unit.prefix <- substr(conc.unit, 1, 1)
+    
+    unit.text.x <- paste("(", x.unit, "M)", sep = "")
+    unit.text.y <- paste("(", y.unit, "M)", sep = "")    
     file.name <- paste(drug.row, drug.col, "effect", drug.pairs$blockIDs[i], data$method, "pdf", sep = ".")
-    drug.row <- paste(drug.row, unit.text, sep = " ")
-    drug.col <- paste(drug.col, unit.text, sep = " ")
+    drug.row <- paste(drug.row, unit.text.x, sep = " ")
+    drug.col <- paste(drug.col, unit.text.y, sep = " ")
+    
     max.dose <- max(abs(max(scores.dose)), abs(min(scores.dose)))
     color.range <- round(max.dose + 5, -1)
     if(is.null(legend.start)){
@@ -573,10 +596,13 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
       
       x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
       y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
-      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)#,
-                                              #x=list(at=x.at,labels=signif(conc1, 1)),
-                                              #y=list(at=y.at,labels=signif(conc2,1))
-                                              ),
+      x_axtcks = axisTicks(c(min(y.conc1), max(y.conc1)), FALSE)
+      y_axtcks = axisTicks(c(min(x.conc1), max(x.conc1)), FALSE)
+      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)
+                                              ,
+                                              x=list(at = x_axtcks, labels = f2si2(x_axtcks*lut[pre == conc.unit.prefix], force_unit = x.unit)),
+                                              y=list(at = y_axtcks, labels = f2si2(y_axtcks*lut[pre == conc.unit.prefix], force_unit = y.unit))
+                                          ),
                        
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
@@ -669,11 +695,14 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
       x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
       y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
       
+      x_axtcks = axisTicks(c(min(y.conc1), max(y.conc1)), FALSE)
+      y_axtcks = axisTicks(c(min(x.conc1), max(x.conc1)), FALSE)
       syn.3d.plot <- wireframe(plots.3d,
-                               scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)# ,
-                                             #x=list(at=x.at,labels=signif(conc1, 1)),
-                                             #y=list(at=y.at,labels=signif(conc2,1))
-                                             ),
+                               scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)
+                                             ,
+                                             x=list(at = x_axtcks, labels = f2si2(x_axtcks*lut[pre == conc.unit.prefix], force_unit = x.unit)),
+                                             y=list(at = y_axtcks, labels = f2si2(y_axtcks*lut[pre == conc.unit.prefix], force_unit = y.unit))
+                               ),
                                drape = TRUE, colorkey = list(space="top",width=0.5),
                                screen = list(z = 30, x = -55),
                                zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.row),cex=1, rot=20),ylab=list(as.character(drug.col),cex=1,rot=-50),
