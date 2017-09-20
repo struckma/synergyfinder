@@ -26,6 +26,11 @@ f2si2<-function (numbers, rounding=FALSE, force_unit = NA, no_suffix = !is.na(fo
   sistrings = c()
   for (i in 1:length(numbers)) {
     number = numbers[[i]]
+    if (number < 0) {
+      number <- - number
+      sgn = "-"
+    } else
+      sgn = ""
     lut <- c(1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-09, 1e-06, 
              0.001, 1, 1000, 1e+06, 1e+09, 1e+12, 1e+15, 1e+18, 1e+21, 
              1e+24)
@@ -34,22 +39,26 @@ f2si2<-function (numbers, rounding=FALSE, force_unit = NA, no_suffix = !is.na(fo
     if (!is.na(force_unit)) {
       ix <- which(pre == force_unit)
     } else {
-      ix <- findInterval(number, lut)
+      if (number == 0)
+        ix = 9
+      else
+        ix <- findInterval(number, lut)
     }
+    if (ix == 0)
+      ix <- 1
     if (lut[ix]!=1) {
       if (no_suffix)
         unit = ""
       else
         unit = pre[ix]
       if (rounding==T) {
-        sistring <- paste(round(number/lut[ix]), unit, sep = ifelse(unit == "", "", " "))
+        sistring <- paste0(sgn, paste(round(number/lut[ix]), unit, sep = ifelse(unit == "", "", " ")))
       }
       else {
-        sistring <- paste(number/lut[ix], unit, sep = ifelse(unit == "", "", " "))
+        sistring <- paste0(sgn, paste(number/lut[ix], unit, sep = ifelse(unit == "", "", " ")))
       } 
-    }
-    else {
-      sistring <- as.character(number)
+    } else {
+      sistring <- paste0(sgn, as.character(number))
     }
     sistrings = c(sistrings, sistring)
   }
@@ -230,13 +239,22 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
       
       x.at = spline(c1$conc, c1$point, xout = x.conc1)$y
       y.at = spline(c2$conc, c2$point, xout = y.conc1)$y
-      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)#,
+      
+      x_axtcks = x.conc1
+      #axisTicks(c(min(a), max(a)), FALSE, nint=dev.size(units = "px")[[1]]/30)
+      y_axtcks = y.conc1
+      #axisTicks(c(min(b), max(b)), FALSE, nint=dev.size(units = "px")[[2]]/30)
+      
+      fig <- wireframe(plots.3d,scales = list(arrows = FALSE,distance=c(0.8,0.8,0.8),col=1,cex=0.8,z = list(tick.number=7)
+#                                              ,
+#                                              x=list(at = (1:length(x_axtcks))*50, labels = f2si2(x_axtcks)),
+#                                              y=list(at = y_axtcks, labels = f2si2(y_axtcks))
                                               #x=list(at=x.at,labels=signif(conc1, 1)),
                                               #y=list(at=y.at,labels=signif(conc2,1))
                                               ),
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
-                       zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
+                       zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.row),cex=1, rot=20),ylab=list(as.character(drug.col),cex=1,rot=-50),
                        zlim=c(start.point, end.point),
                        col.regions=colorRampPalette(c("green","white","red"))(100),
                        main = plot.title,
@@ -332,7 +350,7 @@ PlotSynergy <- function(data, knitr = FALSE, type = "2D", save.file = FALSE, pai
                 ),
                 drape = TRUE, colorkey = list(space="top",width=0.5),
                 screen = list(z = 30, x = -55),
-                zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
+                zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.row),cex=1, rot=20),ylab=list(as.character(drug.col),cex=1,rot=-50),
                 zlim=c(start.point, end.point),
                 col.regions=colorRampPalette(c("green","white","red"))(100),
                 main = plot.title,
@@ -562,7 +580,7 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
                        
                        drape = TRUE, colorkey = list(space="top",width=0.5),
                        screen = list(z = 30, x = -55),
-                       zlab=list(effect.label,rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
+                       zlab=list(effect.label,rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.row),cex=1, rot=20),ylab=list(as.character(drug.col),cex=1,rot=-50),
                        zlim=c(start.point, end.point),
                        col.regions=colorRampPalette(c("green","white","red"))(100),
                        main = plot.title,
@@ -658,7 +676,7 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
                                              ),
                                drape = TRUE, colorkey = list(space="top",width=0.5),
                                screen = list(z = 30, x = -55),
-                               zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.col),cex=1, rot=20),ylab=list(as.character(drug.row),cex=1,rot=-50),
+                               zlab=list(expression("Synergy score"),rot=90,cex=1,axis.key.padding = 0),xlab=list(as.character(drug.row),cex=1, rot=20),ylab=list(as.character(drug.col),cex=1,rot=-50),
                                zlim=c(start.point, end.point),
                                col.regions=colorRampPalette(c("green","white","red"))(100),
                                main = plot.title,
