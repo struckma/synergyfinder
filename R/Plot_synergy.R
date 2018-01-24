@@ -504,9 +504,11 @@ PlotEffect <- function(data, knitr = FALSE, type = "2D", save.file = FALSE,
     #kriged = kriging(x.vec,y.vec,delta.dose.vec,lags=3,pixels=50)
     pixels.num <- 5 * (length(x.conc) - 1) + 2
     if (dim(scores.dose)[1] < 8) {
-      kriged <- kriging(x.vec, y.vec, scores.dose.vec,lags = 2, pixels = pixels.num, model = "spherical")
+      kriged <- kriging(y.vec, x.vec, scores.dose.vec,lags = 2, pixels = pixels.num, model = "spherical")
+#      kriged <- kriging(x.vec, y.vec, scores.dose.vec,lags = 2, pixels = pixels.num, model = "spherical")
     } else {
-      kriged <- kriging(x.vec, y.vec, scores.dose.vec,lags = 3, pixels = pixels.num, model = "spherical")
+      kriged <- kriging(y.vec, x.vec, scores.dose.vec,lags = 3, pixels = pixels.num, model = "spherical")
+#      kriged <- kriging(x.vec, y.vec, scores.dose.vec,lags = 3, pixels = pixels.num, model = "spherical")
     }
     xseq <- round(kriged[["map"]]$x / kriged$pixel)
     yseq <- round(kriged[["map"]]$y / kriged$pixel)
